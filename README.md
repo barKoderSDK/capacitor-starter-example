@@ -56,6 +56,17 @@ Capacitor is a cross-platform app runtime that makes it easy to build web apps t
 5. **Mobile Development SDKs:**
    - For iOS: Install Xcode (macOS).
    - For Android: Install Android Studio.
+6. **Camera permissions:** <br />
+   Our SDK requires camera permission to be granted in order to use scanning features.
+   - For Android, the permission is set in the manifest from the package.
+   - For iOS you need to specify camera permission in Info.plist file inside your project
+
+    ```bash
+   <key>NSCameraUsageDescription</key>
+   <string>Camera permission</string>
+   ```
+
+7. **Start coding and customize the app to meet your specific requirements.**
 
 
 

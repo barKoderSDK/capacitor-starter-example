@@ -118,7 +118,6 @@ export default {
     margin-top: 50px;
     text-align: center;
     position: absolute;
-    padding: 10px;
     left: 0;
     right: 0;
     top: 0;

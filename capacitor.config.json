@@ -1,6 +1,6 @@
 {
-  "appId": "app",
-  "appName": "capacitor",
+  "appId": "com.barkoder.capacitorVueExample",
+  "appName": "barKoder Capacitor Vue Example",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

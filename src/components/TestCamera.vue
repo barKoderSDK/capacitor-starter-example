@@ -115,9 +115,10 @@ export default {
 
 <style scoped>
 #container {
-    margin-top: 30px;
+    margin-top: 50px;
     text-align: center;
     position: absolute;
+    padding: 10px;
     left: 0;
     right: 0;
     top: 0;
@@ -137,7 +138,7 @@ export default {
 }
 
 #barkoderView {
-    height: 250px;
+    height: 380px;
 }
 
 .btnContainer {

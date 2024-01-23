@@ -57,8 +57,6 @@ Capacitor is a cross-platform app runtime that makes it easy to build web apps t
    - For iOS: Install Xcode (macOS).
    - For Android: Install Android Studio.
 
-
-
   
 # Getting Started
 
@@ -93,12 +91,20 @@ Capacitor is a cross-platform app runtime that makes it easy to build web apps t
    npx cap open ios
    npx cap open android
    ```
-6. **If you dont't have global android SDK env do this:**
+6. **If you dont't have global android SDK env do this:** <br />
    - Create local.properties file in android folder and enter path:
    ```bash
    sdk.dir = C://Users//YOUR_USERNAME//AppData//Local//Android//sdk
+7. **Camera permissions:** <br />
+   Our SDK requires camera permission to be granted in order to use scanning features.
+   - For Android, the permission is set in the manifest from the package.
+   - For iOS you need to specify camera permission in Info.plist file inside your project
+
+    ```bash
+   <key>NSCameraUsageDescription</key>
+   <string>Camera permission</string>
    ```
-7. **Start coding and customize the app to meet your specific requirements.**
+8. **Start coding and customize the app to meet your specific requirements.**
    
 These steps provide a basic overview, and the Capacitor documentation may have been updated since our last knowledge update. It's always a good idea to refer to the official Capacitor documentation for the latest and most accurate information: [Capacitor Documentation](https://capacitorjs.com/docs).
 

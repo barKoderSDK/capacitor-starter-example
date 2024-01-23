@@ -78,22 +78,27 @@ Capacitor is a cross-platform app runtime that makes it easy to build web apps t
    ```bash
    npm install
    ```
-3. **Build the project and Synchronize the project with Capacitor:**
-   ```bash
-   npm run build
-   npx cap sync
-   ```
-4. **Add platforms for iOS and Android**
+3. **Add platforms for iOS and Android**
    ```bash
    npx cap add ios
    npx cap add android
+   ```
+4. **Build the project and Synchronize the project with Capacitor:**
+   ```bash
+   npm run build
+   npx cap sync
    ```
 5. **Open the project in your chosen IDE or text editor:**
    ```bash
    npx cap open ios
    npx cap open android
    ```
-6. **Start coding and customize the app to meet your specific requirements.**
+6. **If you dont't have global android SDK env do this:**
+   - Create local.properties file in android folder and enter path:
+   ```bash
+   sdk.dir = C://Users//YOUR_USERNAME//AppData//Local//Android//sdk
+   ```
+7. **Start coding and customize the app to meet your specific requirements.**
    
 These steps provide a basic overview, and the Capacitor documentation may have been updated since our last knowledge update. It's always a good idea to refer to the official Capacitor documentation for the latest and most accurate information: [Capacitor Documentation](https://capacitorjs.com/docs).
 

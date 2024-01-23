@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <div id="barkoderView" ref="barkoderView"></div>
+        <div id="barkoderView" ref="barkoderView"><img v-if="scannedResult?.resultImage" class="resultImage" :src="scannedResult?.resultImage" alt="Scanned Thumbnail" /></div>
 
         <div class="btnContainer">
             <button class="actionButton" @click="startScanning" :disabled="isScanning">
@@ -19,7 +19,7 @@
                 <a :href="scannedResult.textualData"> {{ scannedResult.textualData }} </a>
             </p>
             <p>Type: {{ scannedResult.type }}</p>
-            <img v-if="scannedResult?.thumbnailImage" class="resultImage" :src="scannedResult?.thumbnailImage" alt="Scanned Thumbnail" />
+            <img v-if="scannedResult?.thumbnailImage" class="thumbnailImage" :src="scannedResult?.thumbnailImage" alt="Scanned Thumbnail" />
         </div>
     </div>
 </template>
@@ -39,6 +39,7 @@ export default {
             scannedResult.value = {
                 textualData: barkoderResult.textualData,
                 type: barkoderResult.barcodeTypeName,
+                resultImage: "data:image/jpeg;base64," + barkoderResult.resultImageAsBase64,
                 thumbnailImage: "data:image/jpeg;base64," + barkoderResult.resultThumbnailAsBase64,
             }
             isScanning.value = false;
@@ -65,6 +66,7 @@ export default {
             scannedResult.value = {
                 textualData: null,
                 type: null,
+                resultImage: null,
                 thumbnailImage: null,
             }
             isScanning.value = true;
@@ -86,6 +88,7 @@ export default {
             scannedResult.value = {
                 textualData: null,
                 type: null,
+                resultImage: null,
                 thumbnailImage: null,
             }
             isScanning.value = false;
@@ -137,7 +140,7 @@ export default {
 }
 
 #barkoderView {
-    height: 380px;
+    height: 370px;
 }
 
 .btnContainer {
@@ -168,11 +171,16 @@ export default {
     width: 100%;
 }
 
-.resultImage {
+.thumbnailImage {
     width: 100%;
     max-width: 200px;
     height: auto;
     margin-top: 10px;
     border-radius: 5px;
+}
+
+.resultImage {
+    width: 100%;
+    height: 370px;
 }
 </style>

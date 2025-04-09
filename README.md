@@ -128,109 +128,189 @@ In your vue component file:
 ```bash
 <template>
     <div id="container">
-        <div id="barkoderView" ref="barkoderView"></div>
-
-        <div class="btnContainer">
-            <button class="actionButton" @click="startScanning" :disabled="isScanning">
-                Start Scanning
-            </button>
-            <button class="actionButton" @click="stopScanning" :disabled="!isScanning">
-                Stop Scanning
-            </button>
+        <div class="app_title" :style="{backgroundPosition: isScanning || scannedResult?.thumbnailImage  ? 'top' :   'bottom' }">
+            <div class="title_settings_container">
+              <img v-if="isScanning && !scannedResult?.thumbnailImage" @click="stopScanning" alt="touch icon" src="../  assets/close.svg">
+              <h2 style="width: 100%;">Capacitor + Vue</h2>
+              <img alt="settings icon" src="../assets/Settings.svg" @click="handleSettingsClick"> 
+            </div>
         </div>
+        <div id="barkoderView" ref="barkoderView" style="height: 85vh" :style="{ minHeight: scannedResult?.thumbnailImage && !isScanning ? '85vh' : '85vh', top:   '60px'  }">
+        <img v-if="scannedResult?.resultImage" class="fullResultImage" :src="scannedResult?.resultImage" @click="startScanning" alt="Scanned Thumbnail" />
+        <div v-if="scannedResult?.resultImage" class="tap_anywhere_popup" @click="startScanning">
+          <img alt="touch icon" src="../assets/touch_app.svg">
+          <span>Tap anywhere to continue</span>
+        </div>
+      </div>
 
         <div v-if="scannedResult" class="resultContainer">
-            <p>Result:
-                <a :href="scannedResult.textualData"> {{ scannedResult.textualData }} </a>
-            </p>
-            <p>Type: {{ scannedResult.type }}</p>
-            <img v-if="scannedResult?.thumbnailImage" class="resultImage" :src="scannedResult?.thumbnailImage" alt="Scanned Thumbnail" />
+           <div class="result_text_img">
+              <span class="result_title"> {{ scannedResult.type }}</span>
+              <img v-if="scannedResult?.thumbnailImage" class="resultImage" :src="scannedResult?.thumbnailImage" alt="Scanned Thumbnail" />
+              <p class="result_desc">Result:
+                <a class="result_link" :href="scannedResult.textualData"> {{ scannedResult.textualData }} </a>
+              </p>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted, reactive, computed } from 'vue';
 import { Barkoder, BarcodeType } from 'barkoder-capacitor';
 
 export default {
     setup() {
         const barkoderViewRef = ref('');
+        const barkoderInitialized = ref(false);
         const scannedResult = ref(null);
         const isScanning = ref(false);
+        const recentScans = ref([]);
 
-        Barkoder.addListener('barkoderResultEvent', (barkoderResult) => {
-            scannedResult.value = {
-                textualData: barkoderResult.textualData,
-                type: barkoderResult.barcodeTypeName,
-                thumbnailImage: "data:image/jpeg;base64," + barkoderResult.resultThumbnailAsBase64,
+        const barcodeTypes = [
+          { name: "QR", type: "qr", mode: "2d" },
+          { name: "Qr Micro", type: "qrMicro",  mode: "2d" },
+          { name: "Aztec Compact", type: "aztecCompact", mode: "2d" },
+          { name: "Aztec", type: "aztec", mode: "2d" },
+          { name: "Datamatrix", type: "datamatrix", mode: "2d" },
+          { name: "Dotcode", type: "dotcode", mode: "2d" },
+          { name: "Code 128", type: "code128",  mode: "1d" },
+          { name: "Code 93", type: "code93",  mode: "1d" },
+          { name: "Code 39", type: "code39",  mode: "1d" },
+          { name: "Codabar", type: "codabar",  mode: "1d" },
+          { name: "Code 11", type: "code11",  mode: "1d" },
+          { name: "Ean 8", type: "ean8",  mode: "1d" },
+          { name: "Ean 13", type: "ean13",  mode: "1d" },
+          { name: "Msi", type: "msi",  mode: "1d" },
+          { name: "UpcA", type: "upcA",  mode: "1d" },
+          { name: "UpcE", type: "upcE",  mode: "1d" },
+          { name: "PDF 417", type: "pdf417",  mode: "2d" },
+          { name: "Databar 14", type: "databar14",  mode: "1d" },
+        ];
+
+         const setActiveBarcodeTypes = async () => {
+            try {
+              Object.keys(enabledBarcodes).forEach((barcodeType) => {
+                const isEnabled = enabledBarcodes[barcodeType];
+                Barkoder.setBarcodeTypeEnabled({ type: BarcodeType[barcodeType], enabled: isEnabled });
+              });
+            } catch (error) {
+              console.error("Error setting active barcode types:", error);
             }
-            isScanning.value = false;
-            Barkoder.stopScanning()
-        });
-
-        const setActiveBarcodeTypes = () => {
-            Barkoder.setBarcodeTypeEnabled({ type: BarcodeType.code128, enabled: true });
-            Barkoder.setBarcodeTypeEnabled({ type: BarcodeType.ean13, enabled: true });
         };
 
-        const setBarkoderSettings = () => {
-            Barkoder.setRegionOfInterestVisible({ value: true });
-            Barkoder.setRegionOfInterest({ left: 5, top: 5, width: 90, height: 90 });
-            Barkoder.setCloseSessionOnResultEnabled({ enabled: false });
-            Barkoder.setImageResultEnabled({ enabled: true });
-            Barkoder.setBarcodeThumbnailOnResultEnabled({ enabled: true });
-            Barkoder.setBeepOnSuccessEnabled({ enabled: true });
-            Barkoder.setPinchToZoomEnabled({ enabled: true });
-            Barkoder.setZoomFactor({ value: 2.0 });
+        const setBarkoderSettings = async () => {
+            try {
+                Barkoder.setRegionOfInterestVisible({ value: true });
+                Barkoder.setRegionOfInterest({ left: 5, top: 5, width: 90, height: 90 });
+                Barkoder.setCloseSessionOnResultEnabled({ enabled: true });
+                Barkoder.setMaximumResultsCount({ value: 200 });
+                Barkoder.setImageResultEnabled({ enabled: true });
+                Barkoder.setLocationInImageResultEnabled({ enabled: true });
+                Barkoder.setLocationInPreviewEnabled({ enabled: true });
+                Barkoder.setBarcodeThumbnailOnResultEnabled({ enabled: true });
+                Barkoder.setBeepOnSuccessEnabled({ enabled: true });
+                Barkoder.setPinchToZoomEnabled({ enabled: true });
+                Barkoder.setZoomFactor({ value: currentZoomFactor.value });
+            } catch (error) {
+                console.error('Error setting Barkoder settings:', error);
+                throw error; 
+            }
         };
 
         const startScanning = async () => {
-            scannedResult.value = {
-                textualData: null,
-                type: null,
-                thumbnailImage: null,
-            }
+            scannedResult.value = null;
             isScanning.value = true;
-
-            const boundingRect = await barkoderViewRef.value.getBoundingClientRect();
-            await Barkoder.registerWithLicenseKey({ licenseKey: 'YOUR_LICENCE_KEY' });
-            await Barkoder.initialize({
-                width: Math.round(boundingRect.width),
-                height: Math.round(boundingRect.height),
-                x: Math.round(boundingRect.x),
-                y: Math.round(boundingRect.y),
-            });
-            setBarkoderSettings();
-            setActiveBarcodeTypes();
-            await Barkoder.startScanning();
+            try {
+               if (barkoderInitialized.value) {
+                 await Barkoder.startScanning();
+                 console.log('Scanning started');
+               } else {
+                 alert('Scanner is not initialized yet.');
+               }
+            } catch (error) {
+               console.error('Error during scanning:', error);
+               alert(`Error: ${error}`);
+               isScanning.value = false;
+            }
         };
 
         const stopScanning = async () => {
             scannedResult.value = {
                 textualData: null,
                 type: null,
+                resultImage: null,
                 thumbnailImage: null,
             }
             isScanning.value = false;
             await Barkoder.stopScanning();
         };
 
+        onMounted(() => {
+           barkoderViewRef.value = document.getElementById('barkoderView');
+           initializeScanner();
+           document.addEventListener('mousedown', handleClickOutside);
+         });
+
+        onUnmounted(() => {
+          document.removeEventListener('mousedown', handleClickOutside);
+        });
+
+        Barkoder.addListener('barkoderResultEvent', (barkoderResult) => {
+            const randomId = Math.floor(Math.random() * 1000000);
+      
+            scannedResult.value = {
+              id: randomId,
+                  textualData: barkoderResult?.decoderResults[0]?.textualData || 'No data available',
+                  type: barkoderResult?.decoderResults[0]?.barcodeTypeName || 'Unknown type',
+                  resultImage: `data:image/jpeg;base64,${barkoderResult?.resultImageAsBase64 || ''}`,
+                  thumbnailImage: `data:image/jpeg;base64,${barkoderResult?.resultThumbnailsAsBase64[0] || ''}`,
+            };
+
+            const results = barkoderResult?.decoderResults.map((decoderResult) => ({
+              id: randomId,
+              textualData: decoderResult.textualData || 'No data available',
+              type: decoderResult.barcodeTypeName || 'Unknown type',
+            }));
+            recentScans.value.push(...results);
+            Barkoder.stopScanning()
+            isScanning.value = false;
+        });
+
         return {
             barkoderViewRef,
             startScanning,
             stopScanning,
             scannedResult,
-            isScanning
+            isScanning,
+            barcodeTypes,
+            recentScans
         }
-    },
-    mounted: function () {
-        this.barkoderViewRef = this.$refs.barkoderView
     }
 }
 
 </script>
 ```
+
+ ```bash
+<style>
+  #barkoderView {
+    min-height: 85vh;
+    height: 100%;
+    position: relative;
+    top: 60px;
+  }
+  #barkoderView .fullResultImage {
+    height: 100%;
+    width: 100%;
+  }
+  .resultContainer {
+    width: 100%;
+  }
+ // other styles as needed
+</style>
+
+   ```
 
 
 

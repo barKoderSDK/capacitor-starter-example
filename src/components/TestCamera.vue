@@ -662,6 +662,7 @@ const saveSelectedEngine = () => {
 
     const deleteScannedBarcode = () => {
       recentScans.value = recentScans.value.filter(barcode => barcode.id !== selectedBarcode.value.id);
+      isDetailsMorePopupVisible.value = false;
       closeBarcodeDetailsPopup();
     }
 
@@ -1031,8 +1032,9 @@ const saveSelectedEngine = () => {
 }
 
 .resultImage {
-  width: 160px;
-  height: 90px;
+  max-width: 280px;
+  max-height: 200px;
+  height: auto;
   border-radius: 5px;
 }
 
@@ -1071,7 +1073,7 @@ const saveSelectedEngine = () => {
   background-color: #00000080;
   position: absolute;
   z-index: 999;
-  top: 50%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, 50%);
   color: #FFFFFF;
